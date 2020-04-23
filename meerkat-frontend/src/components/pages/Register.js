@@ -1,29 +1,23 @@
 import React from 'react';
-import { TextField, Button, Input, Chip } from '@material-ui/core/';
-import { useForm } from 'react-hook-form';
+import { TextField, Button, Input } from '@material-ui/core/';
+import { useForm, Controller } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
+import ChipInput from 'material-ui-chip-input';
+
 
 export default function Register(){
     //variable used to redirect users after registration 
     const history = useHistory();
 
-    const {register, handleSubmit, errors} = useForm({
+    const {register, handleSubmit, errors, control} = useForm({
         defaultValues: {
 
         }
     });
-
-    const [chipData, setChipData] = React.useState([
-        { key: 0, label: 'Angular' },
-        { key: 1, label: 'jQuery' },
-        { key: 2, label: 'Polymer' },
-        { key: 3, label: 'React' },
-        { key: 4, label: 'Vue.js' },
-    ]);
     
-    const onSubmit = (data, error, props) => {
+    const onSubmit = (data) => {
         //The first url is used to bypass CORS error
-        fetch('https://cors-anywhere.herokuapp.com/'+'https://webhook.site/0fa7de81-e70b-4085-9716-b3e11c982f5f', {
+        fetch('https://warm-meadow-92561.herokuapp.com/', {
             method: 'POST',
             headers:{
                 'Accept': 'application/json',
@@ -32,7 +26,6 @@ export default function Register(){
             body: JSON.stringify(data)
         }).then(function(response) {
             if(response.ok){
-                alert("Thank you for registering")
                 history.push('/');
             }
         })
@@ -48,6 +41,7 @@ export default function Register(){
                 <form onSubmit={ handleSubmit(handleSubmit(data => console.log(data))) }>
                     <div className="container">
                         <div className="row"> 
+
                             <div className="col"> 
                                 <TextField 
                                     type="text" 
@@ -86,8 +80,8 @@ export default function Register(){
                                         register({ 
                                             required: "Please enter Username", 
                                             minLength: {value: 2, message: "Name must be at least 2 characters"} }) 
-                                        }
-                                    /> 
+                                    }
+                                /> 
                                 {errors.lName && <p className="p-error"> { errors.lName.message } </p>}
                             </div>
 
@@ -100,8 +94,8 @@ export default function Register(){
                                         register({ 
                                             required: "Please Enter password", 
                                             minLength: {value: 8, message:"Password too short" }}) 
-                                        }
-                                    /> 
+                                    }
+                                /> 
                                 {errors.password && <p className="p-error"> { errors.password.message } </p>}
                             </div>
 
@@ -115,14 +109,33 @@ export default function Register(){
                                             required: 'Required',
                                             pattern: {value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, 
                                             message: "invalid email address"}}) 
-                                        }
-                                    />
+                                    }
+                                />
                                 {errors.emailAddress && <p className="p-error"> { errors.emailAddress.message } </p>}
                             </div>
+
+                            <div className="col">
+                            <Controller 
+                                as={
+                                    <ChipInput
+                                        fullWidthInput
+                                        allowDuplicates="false"
+                                        alwaysShowPlaceholder
+                                        placeholder="Your favorite genres"
+                                        inputRef={register}
+                                        color="blue"
+                                    />
+                                } 
+                                name="genres" 
+                                control={control}
+                            />
+                            { errors.genres && <p className="p-error"> { errors.genres.message }</p>}
+                        </div>
+                            
                         </div>
                     </div>
-                    <div>
-                        <Button variant="contained" onClick={ handleSubmit(onSubmit) }> Submit </Button>
+                    <div className="div-button">
+                        <Button variant="outlined" color="blue" onClick={ handleSubmit(onSubmit) }> Submit </Button>
                     </div>
                 </form>
 
