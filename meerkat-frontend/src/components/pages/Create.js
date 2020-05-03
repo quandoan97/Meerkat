@@ -25,7 +25,7 @@ export default function Create() {
                                 {errors.uniquePin && <p> { errors.uniquePin.message } </p>}
                             </div>
                             <div className="col">
-                                <input type="text" name="genre" placeholder="genre" ref={ register }/>
+                                <input type="text" name="genre" placeholder="Genre" ref={ register }/>
                             </div>
                         </div>
                     </div>
