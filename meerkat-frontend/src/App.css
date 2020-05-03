@@ -63,3 +63,38 @@ li {
   background-color: #00000000;
 
 }
+#mySidenav a {
+  position: absolute; /* Position them relative to the browser window */
+  left: -80px; /* Position them outside of the screen */
+  transition: 0.3s; /* Add transition on hover */
+  padding: 20px;
+  width: 100px; /* Set a specific width */
+  text-decoration: none; /* Remove underline */
+  font-size: 15px;
+  color: white;
+  border-radius: 0 5px 5px 0;
+}
+
+#mySidenav a:hover {
+  left: 0;
+}
+
+#profile {
+  top: 80px;
+  background-color:#2196F3;
+}
+
+#create {
+  top: 140px;
+  background-color:#4CAF50;
+}
+
+#view{
+  top: 200px;
+  background-color: #f44336;
+}
+
+#about {
+  top: 260px;
+  background-color: rgb(58, 57, 57) /* Light Black */
+}
