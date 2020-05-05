@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Button,Input } from '@material-ui/core/'
+import { TextField, Button, Input } from '@material-ui/core/'
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 
@@ -10,21 +10,27 @@ export default function LogIn(){
     const history = useHistory();
 
     const onSubmit = (data) => {
-        fetch('https://cors-anywhere.herokuapp.com/'+'https://webhook.site/42fb35aa-a83e-4ee2-be2a-6a20ba2dfc7a', {
+        fetch('/auth/login', {
             method: 'POST',
             headers:{
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-        }).then(function(response) {
+        })
+        .then(function(response) {
             if(response.ok){
-                alert("Thank you for registering")
-                history.push('/');
+                return response.json()
             }
+        })
+        .then( data => {
+             localStorage.setItem('jwt', data.jwt);
+             localStorage.setItem('userData', JSON.stringify(data.userData));
+             history.push('/');
         })
         .catch((error) => {
             console.error('Error', error);
+            alert('There was an error trying to log you in.');
         })
     };
 
@@ -35,7 +41,7 @@ export default function LogIn(){
                     <div className="container">
                         <div className="row"> 
                             <div className="col">  
-                                <input type="text" name="uName" placeholder="Username" ref={ register }/> 
+                                <input type="text" name="username" placeholder="Username" ref={ register }/> 
                             </div>
                             <div className="col">  
                                 <input type="password" name="password" placeholder="Password" ref={ register({required: "Please Enter password", minLength: {value: 8, message:"Password too short" }}) }/> 

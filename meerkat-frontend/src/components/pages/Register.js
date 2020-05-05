@@ -10,7 +10,7 @@ export default function Register(){
     const history = useHistory();
 
     const [allGenres, setAllGenres] = useState({});
-    const [selectedGenreIds, setSelectedGenreIds] = useState(new Set());
+    const [selectedGenres, setSelectedGenres] = useState(new Set());
 
     const {register, handleSubmit, errors, control} = useForm({
         defaultValues: {
@@ -20,7 +20,7 @@ export default function Register(){
 
     //retrives all genres from server to render as chips
     useEffect(() => {
-        fetch('http://localhost:8080/api/genre/getAll')
+        fetch('https://warm-meadow-92561.herokuapp.com/api/genre/getAll')
             .then( (res) => res.json() )
             .then( (genres) => {
                 let genreChipProps = { }
@@ -29,7 +29,6 @@ export default function Register(){
                 genres.map( (genre) => {
                     genreChipProps[genre.genreId] = {...genre, isSelected: false}
                 });
-                console.log(genreChipProps);
                 setAllGenres(genreChipProps);
             })
             .catch( (err) => { 
@@ -39,24 +38,29 @@ export default function Register(){
     }, []);
     
     const onSubmit = (data) => {
-        //The first url is used to bypass CORS error
-        // fetch('https://warm-meadow-92561.herokuapp.com/auth/register', {
-        //     method: 'POST',
-        //     headers:{
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(data)
-        // }).then(function(response) {
-        //     if(response.ok){
-        //         history.push('/');
-        //     }
-        // })
-        // .catch((error) => {
-        //     console.error('Error', error);
-        // })
-        data.favoriteGenres = data.favoriteGenres.split(',');
-        console.log(data);
+        data.favoriteGenres = JSON.parse(`[${data.favoriteGenres}]`);
+        fetch('/auth/register', {
+            method: 'POST',
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            if(response.ok){
+                return response.json();
+            }
+        })
+        .then( data => {
+            localStorage.setItem('jwt', data.jwt);
+            localStorage.setItem('userData', JSON.stringify(data.userData));
+            history.push('/');
+        })
+        .catch((error) => {
+            alert('There was an error trying to register you.');
+            console.error('Error', error);
+        })
     };
     
     const handleChipClick = (event) => {
@@ -64,9 +68,11 @@ export default function Register(){
         while(event.target.getAttribute('genreid') == undefined)
             event.target = event.target.parentNode;
 
-        //genreId of corresponding chip will be saved in state when clicked
+        //genre of the corresponding chip will be saved in state when clicked
         const genreId = event.target.getAttribute('genreid');
-        setSelectedGenreIds(new Set([...selectedGenreIds, genreId]));
+        const genreName = event.target.getAttribute('genreName');
+        const genre = JSON.stringify({ genreId, genreName });
+        setSelectedGenres(new Set([...selectedGenres, genre]));
 
         //the chip will be rendered unclickable unless deleted
         let newGenreProps = JSON.parse(JSON.stringify(allGenres));
@@ -78,11 +84,15 @@ export default function Register(){
         while(event.target.getAttribute('genreid') == undefined)
             event.target = event.target.parentNode;
 
-        //remove the genreId from the selected set in state
+        //remove the genre from the selected set in state
         const genreIdToDelete = event.target.getAttribute('genreid');
-        let newSelectedGenreIds = new Set(selectedGenreIds);
-        newSelectedGenreIds.delete(genreIdToDelete);
-        setSelectedGenreIds(newSelectedGenreIds);
+        const genreNameToDelete = event.target.getAttribute('genrename');
+
+        const genreToDelete = JSON.stringify({ genreId: genreIdToDelete, genreName: genreNameToDelete });
+
+        let newSelectedGenres = new Set(selectedGenres);
+        newSelectedGenres.delete(genreToDelete);
+        setSelectedGenres(newSelectedGenres);
 
         //render the chip to be clickable again
         let newGenreProps = JSON.parse(JSON.stringify(allGenres));
@@ -102,7 +112,7 @@ export default function Register(){
                             <div className="col"> 
                                 <TextField 
                                     type="text" 
-                                    name="fName" 
+                                    name="firstName" 
                                     placeholder="First Name" 
                                     inputRef={ 
                                         register({ 
@@ -117,7 +127,7 @@ export default function Register(){
                             <div className="col">  
                                 <Input 
                                     type="text" 
-                                    name="lName" 
+                                    name="lastName" 
                                     placeholder="Last Name" 
                                     inputRef={ 
                                         register({ 
@@ -131,7 +141,7 @@ export default function Register(){
                             <div className="col">  
                                 <Input 
                                     type="text" 
-                                    name="uName" 
+                                    name="username" 
                                     placeholder="Username" 
                                     inputRef={ 
                                         register({ 
@@ -159,7 +169,7 @@ export default function Register(){
                             <div className="col">
                                 <Input 
                                     type="email" 
-                                    name="emailAddress" 
+                                    name="email" 
                                     placeholder="Email Address" 
                                     inputRef={ 
                                         register({
@@ -203,7 +213,7 @@ export default function Register(){
                             <Input
                                 name="favoriteGenres"
                                 type="hidden"
-                                value={[...selectedGenreIds]}
+                                value={[...selectedGenres]}
                                 inputRef={register}
                             />
                         </div>
