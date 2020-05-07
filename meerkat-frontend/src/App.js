@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Navbar from './components/NavigationBar';
 import './App.css';
-import { Home, LogIn, UserPage, Create, Register, Room } from './components/index'
+import { Home, LogIn, UserPage, Create, Register, Room, View } from './components/index'
 
 function App() {
   return (
@@ -15,7 +15,8 @@ function App() {
             <Route exact path="/userpage" component={ UserPage } />
             <Route exact path="/create" component={ Create } />
             <Route exact path="/register" component={ Register } />
-            <Route path="/room" component= { Room } />
+            <Route exact path="/allrooms" component={ View } />
+            <Route path="/room" component={ Room } />
           </Switch>
         </div>
       </Router>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Input, Chip } from '@material-ui/core/';
+import { TextField, Button, Input, Chip, InputLabel } from '@material-ui/core/';
 import { useForm, Controller } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 
@@ -118,7 +118,7 @@ export default function Register(){
                                             }) 
                                         }
                                 /> 
-                                {errors.fName && <p className="p-error"> { errors.fName.message } </p>}
+                                {errors.firstName && <p className="p-error"> { errors.firstName.message } </p>}
                             </div>
 
                             <div className="col">  
@@ -132,7 +132,7 @@ export default function Register(){
                                             minLength: {value: 2, message: "Name must be at least 2 characters"} }) 
                                         }
                                     /> 
-                                {errors.lName && <p className="p-error"> { errors.lName.message } </p> }
+                                {errors.lastName && <p className="p-error"> { errors.lastName.message } </p> }
                             </div>
 
                             <div className="col">  
@@ -146,7 +146,7 @@ export default function Register(){
                                             minLength: {value: 2, message: "Name must be at least 2 characters"} }) 
                                     }
                                 /> 
-                                {errors.lName && <p className="p-error"> { errors.lName.message } </p>}
+                                {errors.username && <p className="p-error"> { errors.username.message } </p>}
                             </div>
 
                             <div className="col">  
@@ -175,10 +175,11 @@ export default function Register(){
                                             message: "invalid email address"}}) 
                                     }
                                 />
-                                {errors.emailAddress && <p className="p-error"> { errors.emailAddress.message } </p>}
+                                {errors.email && <p className="p-error"> { errors.email.message } </p>}
                             </div>
 
                             <div className="col">
+                            <InputLabel color='white' id="genreLabel">Favorite Genres</InputLabel>
                             {
                                 Object.values(allGenres).map( (genre) => <Chip 
                                                             clickable = { !genre.isSelected }
@@ -202,7 +203,7 @@ export default function Register(){
                         </div>
                     </div>
                     <div className="div-button">
-                        <Button variant="outlined" color="blue" onClick={ handleSubmit(onSubmit) }> Submit </Button>
+                        <Button variant="contained" color="default" onClick={ handleSubmit(onSubmit) }> Submit </Button>
                     </div>
                 </form>
 

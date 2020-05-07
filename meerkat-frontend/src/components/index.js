@@ -8,6 +8,7 @@ import Create from './pages/Create';
 import Register from './pages/Register';
 import Room from './pages/Room';
 import VideoPlayer from './VideoPlayer';
+import View from './pages/View';
 
 export {
     Home,
@@ -16,5 +17,6 @@ export {
     Register,
     UserPage,
     Room,
-    VideoPlayer
+    VideoPlayer,
+    View
 }

@@ -107,3 +107,19 @@ li {
 .div-button{
   margin-top: 10px;
 }
+
+.MuiFormLabel-root{
+  color: rgb(217, 223, 230) !important;
+}
+.MuiChip-colorSecondary{
+  background-color: darkblue !important;
+  color: white;
+}
+
+.MuiChip-colorSecondary:hover{
+  background-color: lightslategray !important;
+}
+
+.MuiInputBase-root{
+  background-color: rgb(187, 182, 211);
+}

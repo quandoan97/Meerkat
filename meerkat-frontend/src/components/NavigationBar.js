@@ -22,7 +22,7 @@ export default class NavigationBar extends Component {
                     <div id="mySidenav" class="sidenav">
                         <a href="/userpage" id="profile">Profile</a>
                         <a href="/create" id="create">Create Room</a>
-                        <a href="/View" id="view">View Rooms</a>
+                        <a href="/allrooms" id="view">View Rooms</a>
                         <a href="#" id="about">About Us</a>
                       </div>
                 </div>

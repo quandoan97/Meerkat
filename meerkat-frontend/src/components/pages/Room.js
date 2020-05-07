@@ -38,7 +38,7 @@ export default class Room extends Component {
 
     async componentDidMount(){
         const roomId = queryString.parse(window.location.search).id;
-        await fetch(`https://warm-meadow-92561.herokuapp.com/api/rooms/getByRoomId?id=${roomId}`)
+        await fetch(`https://warm-meadow-92561.herokuapp.com/api/room/getByRoomId?id=${roomId}`)
             .then( (res) => res.json() )
             .then( (roomData) => {
                 const userId = JSON.parse(localStorage.getItem('userData')).id;
