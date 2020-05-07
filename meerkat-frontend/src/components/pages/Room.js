@@ -45,11 +45,12 @@ export default class Room extends Component {
                 const hostId = roomData.hostId;
                 const isHost = userId == hostId;
                 this.setState({ roomData, isHost });
-            })
-            .catch( (err) => { 
+           })
+          .catch( (err) => { 
                 console.log(err)
                 //show error page
-            });
+           });
+      
         //setting up the socket for stream info signalling
         var socket = new window.SockJS('https://warm-meadow-92561.herokuapp.com/meerkat-websocket');
         socket.withCredentials = true;
@@ -58,33 +59,6 @@ export default class Room extends Component {
         stompClient.connect({}, this.handleSocketConnect);
         
         //setting up adaptor for screen recording and publishing
-        if(false) {
-            var publishAdaptor = new window.WebRTCAdaptor({
-                websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
-                mediaConstraints: {
-                    video: 'screen+camera',
-                    audio: true
-                },
-                peerconnection_config: null,
-                sdp_constraints: {
-                    OfferToReceiveAudio: false,
-                    OfferToReceiveVideo: false
-                },
-                localVideoId: 'stream',
-                debug: true,
-                callback: this.handleAdaptorInfo,
-                callbackError: function(error, message) {
-                    var errorMessage = JSON.stringify(error);
-                    if (typeof message != 'undefined') {
-                        errorMessage = message;
-                    }
-                    console.log('error callback: ' + JSON.stringify(error));
-                    console.log(errorMessage);
-                    alert(errorMessage);
-                }
-            });
-            this.setState({ publishAdaptor });
-        }
     }
 
     handleSocketMessages(content){
@@ -164,13 +138,14 @@ export default class Room extends Component {
             <div>
                 <h1>Party Room</h1>
                 {
-                this.state.isHost ?
+                    this.state.isHost ?
+
                     <video 
                             id='stream' 
                             controls
                             width="620" >
                     </video>
-                    :
+                        :
                     <VideoPlayer { ...this.state.videoJsOptions } />
                 }
                 <br></br>
