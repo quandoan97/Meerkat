@@ -202,7 +202,7 @@ function WebRTCAdaptor(initialValues)
 		//now get only audio to add this stream
 		if (audioConstraint != "undefined" && audioConstraint != false) {
 			var media_audio_constraint = { audio: audioConstraint};
-			navigator.mediaDevices.getUserMedia(media_audio_constraint)
+			navigator.mediaDevices.getDisplayMedia(media_audio_constraint)
 			.then(function(audioStream) {
 
 				if (thiz.mediaConstraints.video == "screen+camera" )
@@ -239,49 +239,55 @@ function WebRTCAdaptor(initialValues)
 
 		// Check Media Constraint video value screen or screen + camera
 		if(mediaConstraints.video == "screen+camera" || mediaConstraints.video == "screen"){
-
-			navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
+			navigator.mediaDevices.getDisplayMedia({
+				video: true, 
+				audio: {
+					autoGainControl: false,
+					echoCancellation: false,
+					googAutoGainControl: false,
+					noiseSuppression: false
+				}
+			})
 			.then(function(stream){
 
-				thiz.getUserMediaDetail(mediaConstraints,audioConstraint,stream);
-
-				// var audioTrack = stream.getAudioTracks();
+				// thiz.getUserMediaDetail(mediaConstraints,audioConstraint,stream);
+				var audioTrack = stream.getAudioTracks();
 				// if (audioTrack.length > 0) {
 				// 	stream.removeTrack(audioTrack[0]);
 				// }
 
 				// //add callback if desktop is sharing
-				// stream.getVideoTracks()[0].onended = function(event) {
-				// 	thiz.callback("screen_share_stopped");
-				// 	thiz.switchVideoSource(streamId, mediaConstraints, null);
-				// }
+				stream.getVideoTracks()[0].onended = function(event) {
+					thiz.callback("screen_share_stopped");
+					thiz.switchVideoSource(streamId, mediaConstraints, null);
+				}
 
 				// //create a canvas element
-				// var canvas = document.createElement("canvas");
-				// var canvasContext = canvas.getContext("2d");
+				var canvas = document.createElement("canvas");
+				var canvasContext = canvas.getContext("2d");
 
-				// //create video element for screen
-				// //var screenVideo = document.getElementById('sourceVideo');
-				// var screenVideo = document.createElement('video');
-				// //TODO: check audio track
-				// console.log(stream.getAudioTracks());
-				// console.log(stream.getVideoTracks());
-				// screenVideo.srcObject = stream;
-				// screenVideo.play();
+				//create video element for screen
+				//var screenVideo = document.getElementById('sourceVideo');
+				var screenVideo = document.createElement('video');
+				//TODO: check audio track
+				console.log(stream.getAudioTracks());
+				console.log(stream.getVideoTracks());
+				screenVideo.srcObject = stream;
+				screenVideo.play();
 
-				// var canvasStream = canvas.captureStream(15);
-				// // canvasStream.addTrack(stream.getAudioTracks()[0]);
+				var canvasStream = canvas.captureStream(15);
+				// canvasStream.addTrack(stream.getAudioTracks()[0]);
 				
-				// //call gotStream
-				// thiz.gotStream(canvasStream);
+				//call gotStream
+				thiz.gotStream(canvasStream);
 
-				// //update the canvas
-				// setInterval(function(){
-				// 	//draw screen to canvas
-				// 	canvas.width = screenVideo.videoWidth;
-				// 	canvas.height = screenVideo.videoHeight;
-				// 	canvasContext.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
-				// }, 66);
+				//update the canvas
+				setInterval(function(){
+					//draw screen to canvas
+					canvas.width = screenVideo.videoWidth;
+					canvas.height = screenVideo.videoHeight;
+					canvasContext.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
+				}, 66);
 
 			})
 			.catch(function(error) {
@@ -453,7 +459,7 @@ function WebRTCAdaptor(initialValues)
 	this.enableMicInMixedAudio = function(enable) {
 		if (thiz.micGainNode != null) {
 			if (enable) {
-				thiz.micGainNode.gain.value = 1;
+				thiz.micGainNode.gain.value = 0;
 			}
 			else {
 				thiz.micGainNode.gain.value = 0;

@@ -38,7 +38,7 @@ export default class Room extends Component {
 
     async componentDidMount(){
         const roomId = queryString.parse(window.location.search).id;
-        await fetch(`https://warm-meadow-92561.herokuapp.com:8080/api/rooms/getByRoomId?id=${roomId}`)
+        await fetch(`https://warm-meadow-92561.herokuapp.com/api/rooms/getByRoomId?id=${roomId}`)
             .then( (res) => res.json() )
             .then( (roomData) => {
                 const userId = JSON.parse(localStorage.getItem('userData')).id;
@@ -51,14 +51,14 @@ export default class Room extends Component {
                 //show error page
             });
         //setting up the socket for stream info signalling
-        var socket = new window.SockJS('https://warm-meadow-92561.herokuapp.com:8080/meerkat-websocket');
+        var socket = new window.SockJS('https://warm-meadow-92561.herokuapp.com/meerkat-websocket');
         socket.withCredentials = true;
         const stompClient = Stomp.over(socket);
         this.setState({ stompClient })
         stompClient.connect({}, this.handleSocketConnect);
         
         //setting up adaptor for screen recording and publishing
-        if(this.state.isHost) {
+        if(false) {
             var publishAdaptor = new window.WebRTCAdaptor({
                 websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
                 mediaConstraints: {
@@ -122,7 +122,32 @@ export default class Room extends Component {
         this.setState({ videoJsOptions });
     }
 
-    onStreamClick(event) {
+    async onStreamClick(event) {
+        var publishAdaptor = new window.WebRTCAdaptor({
+            websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
+            mediaConstraints: {
+                video: 'screen+camera',
+                audio: true
+            },
+            peerconnection_config: null,
+            sdp_constraints: {
+                OfferToReceiveAudio: false,
+                OfferToReceiveVideo: false
+            },
+            localVideoId: 'stream',
+            debug: true,
+            callback: this.handleAdaptorInfo,
+            callbackError: function(error, message) {
+                var errorMessage = JSON.stringify(error);
+                if (typeof message != 'undefined') {
+                    errorMessage = message;
+                }
+                console.log('error callback: ' + JSON.stringify(error));
+                console.log(errorMessage);
+                alert(errorMessage);
+            }
+        });
+        this.setState({ publishAdaptor });
         try {
             this.state.publishAdaptor.publish(this.state.roomData.id);
         } catch(err) {
