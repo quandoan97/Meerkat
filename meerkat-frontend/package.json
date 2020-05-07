@@ -58,5 +58,5 @@
     "eslint-plugin-react-hooks": "^1.7.0",
     "prettier": "^1.19.1"
   },
-  "proxy": "https//:warm-meadow-92561.herokuapp.com:8080"
+  "proxy": "https://warm-meadow-92561.herokuapp.com:8080"
 }
