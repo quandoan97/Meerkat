@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, Input, Chip } from '@material-ui/core/';
 import { useForm, Controller } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-// import ChipInput from 'material-ui-chip-input';
 
 
 export default function Register(){
@@ -180,25 +179,10 @@ export default function Register(){
                             </div>
 
                             <div className="col">
-                            {/* <Controller 
-                                as={
-                                    <ChipInput
-                                        fullWidthInput
-                                        allowDuplicates="false"
-                                        alwaysShowPlaceholder
-                                        placeholder="Your favorite genres"
-                                        inputRef={register}
-                                        color="blue"
-                                    />
-                                } 
-                                name="genres" 
-                                control={control}
-                            />
-                            { errors.genres && <p className="p-error"> { errors.genres.message }</p>} */}
                             {
                                 Object.values(allGenres).map( (genre) => <Chip 
                                                             clickable = { !genre.isSelected }
-                                                            color='primary'
+                                                            color='secondary'
                                                             label={ genre.genreName }
                                                             genreName={ genre.genreName }
                                                             genreId={ genre.genreId } 

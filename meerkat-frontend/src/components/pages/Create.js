@@ -118,7 +118,7 @@ export default function Create() {
                             
                     </div>
                     <div className="div-button">
-                        <Button variant="outlined" color="primary" onClick={ handleSubmit(onSubmit) }> Submit </Button>
+                        <Button variant="contained" onClick={ handleSubmit(onSubmit) }> Submit </Button>
                     </div>                
                 </div>
             </form>
