@@ -23,7 +23,7 @@ export default function View() {
                 {
                     allRooms.map( (room) => {
                         return (
-                        <Link to={`/room/id?=${room.id}`}>
+                        <Link to={`/room?id=${room.id}`}>
                             <Grid item>
                                 <Card>
                                     <CardContent>

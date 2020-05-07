@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import { VideoPlayer } from '../';
+import { Grid, TextField, Input } from '@material-ui/core';
 import { Stomp } from '@stomp/stompjs';
 import queryString from 'query-string';
 
@@ -20,7 +21,9 @@ export default class Room extends Component {
             },
             stompClient: null,
             roomData: null,
-            isHost: false
+            isHost: false,
+            chatMessages: [],
+            chatMesageContent: ''
         }
         this.onStreamClick = this.onStreamClick.bind(this);
         this.onStopClick = this.onStopClick.bind(this);
@@ -28,23 +31,35 @@ export default class Room extends Component {
         this.handleSocketMessages = this.handleSocketMessages.bind(this);
         this.handleAdaptorInfo = this.handleAdaptorInfo.bind(this);
         this.handleSocketConnect = this.handleSocketConnect.bind(this);
+        this.handleMessageSubmit = this.handleMessageSubmit.bind(this);
+        this.addChatMessage = this.addChatMessage.bind(this);
     }
 
     handleSocketConnect(frame) {
         console.log('Connected: ', frame);
         this.state.stompClient.subscribe(`/topic/rooms/${this.state.roomData.id}`, this.handleSocketMessages);
-        this.state.stompClient.send(`/streams/join/${this.state.roomData.id}`, {}, JSON.stringify({'streamId': this.state.roomData.id}));
+
+        const { username } = JSON.parse(localStorage.getItem('userData'));
+        this.state.stompClient.send(`/streams/join/${this.state.roomData.id}`, {}, 
+            JSON.stringify({
+                streamId: this.state.roomData.id,
+                messageType: 'join message',
+                senderUsername: username
+            }));
     }
 
-    async componentDidMount(){
+    async componentDidMount(){ //TODO: make sure user is logged in
         const roomId = queryString.parse(window.location.search).id;
+        console.log(window.location.search);
         await fetch(`https://warm-meadow-92561.herokuapp.com/api/room/getByRoomId?id=${roomId}`)
             .then( (res) => res.json() )
             .then( (roomData) => {
+                console.log(roomData);
                 const userId = JSON.parse(localStorage.getItem('userData')).id;
                 const hostId = roomData.hostId;
                 const isHost = userId == hostId;
                 this.setState({ roomData, isHost });
+                console.log(this.state);
            })
           .catch( (err) => { 
                 console.log(err)
@@ -67,7 +82,33 @@ export default class Room extends Component {
             this.setClientVidSrc(message.streamId);
         } else if(message.messageType == 'stop stream') {
             this.setClientVidSrc(null);
+        } else if(message.messageType == 'chat message' || message.messageType == 'join message inactive') {
+            this.addChatMessage(message);
+        } else if(message.messageType == 'join message active') {
+            this.setClientVidSrc(message.streamId);
+            this.addChatMessage(message);
         }
+    }
+
+    addChatMessage(newMessage) {
+        let chatMessages = [...this.state.chatMessages, newMessage];
+        if(chatMessages.length > 5) {
+            chatMessages = chatMessages.slice(1);
+        }
+        this.setState({ chatMessages });
+    }
+
+    handleMessageSubmit(event){
+        event.preventDefault();
+        const { username } = JSON.parse(localStorage.getItem('userData'));
+        this.state.stompClient.send(`/streams/chat/${this.state.roomData.id}`, {}, 
+                                    JSON.stringify({
+                                        streamId: this.state.roomData.id,
+                                        messageType: 'chat message',
+                                        messageContent: this.state.chatMesageContent,
+                                        senderUsername: username
+                                }));
+        this.setState({ chatMesageContent: '' });
     }
 
     handleAdaptorInfo(info, obj){
@@ -135,25 +176,107 @@ export default class Room extends Component {
 
     render(){
         return (
-            <div>
-                <h1>Party Room</h1>
+            <Grid container direction='row' justify='center' alignItems='center'>
+                <Grid item direction='row' justify='center' alignItems='center' lg={12}>
+                    <h1>Party Room</h1>
+                </Grid>
                 {
                     this.state.isHost ?
-
-                    <video 
-                            id='stream' 
-                            controls
-                            width="620" >
-                    </video>
+                    <Grid container md={12} justify='center' alignItems='center'>
+                        <Grid container direction='column' justify='left' alignItems='center' md={5}>
+                            <video 
+                                    id='stream' 
+                                    controls
+                                    width="620" >
+                            </video>
+                            <button id='btn1' onClick={ this.onStreamClick }>Stream your screen</button>
+                            <button id='btn3' onClick={ this.onStopClick}>Stop stream</button>
+                        </Grid>
+                        <Grid 
+                            container 
+                            direction='column' 
+                            alignItems='baseline' 
+                            justify='left' 
+                            md={3} 
+                            style={{border:'2px solid black', paddingTop:'1%', paddingLeft: '5%', paddingBottom: '5%', backgroundColor: '#9B949C'}}>
+                            <h1>Chat</h1>
+                                {
+                                    this.state.chatMessages.map( (message) => {
+                                        if(message.messageType == 'chat message')
+                                            return(
+                                                <Grid container direction = 'column' justify='left' alignItems='baseline' md={12}>
+                                                <p style={{color:'white'}}>{`${message.senderUsername} : ${message.messageContent}`}</p>
+                                                </Grid>)
+                                        else
+                                            return(
+                                                <Grid container direction = 'column' justify='left' alignItems='baseline' md={12}>
+                                                <p style={{color:'white'}}>{ message.messageContent }</p>
+                                                </Grid>)        
+                                    })
+                                }
+                            <Grid container direction='row' alignItems='baseline'>
+                                <form onSubmit={this.handleMessageSubmit}>
+                                    <TextField 
+                                        id='chatbox' 
+                                        name='chatbox' 
+                                        multiline 
+                                        value={this.state.chatMesageContent} 
+                                        onChange={ (e) => {this.setState({ chatMesageContent: e.target.value })}}
+                                    />
+                                    <Input type='submit' value='Send Message'/>
+                                </form>
+                            </Grid>
+                        </Grid>
+                    </Grid>
                         :
-                    <VideoPlayer { ...this.state.videoJsOptions } />
+                    <Grid container md={12} justify='center' alignItems='center'>
+                        <Grid container direction='column' justify='left' alignItems='center' md={5}>
+                            <VideoPlayer { ...this.state.videoJsOptions } />
+                        </Grid>
+                        <Grid 
+                            container 
+                            direction='column' 
+                            alignItems='baseline' 
+                            justify='left' 
+                            md={3} 
+                            style={{border:'2px solid black', paddingTop:'1%', paddingLeft: '5%', paddingBottom: '5%', backgroundColor: '#9B949C'}}>
+                                <h1>Chat</h1>
+                                {
+                                    this.state.chatMessages.map( (message) => {
+                                        if(message.messageType == 'chat message')
+                                            return(
+                                                <Grid container direction = 'column' justify='left' alignItems='baseline' md={12}>
+                                                <p style={{color:'white'}}>{`${message.senderUsername} : ${message.messageContent}`}</p>
+                                                </Grid>)
+                                        else
+                                            return(
+                                                <Grid container direction = 'column' justify='left' alignItems='baseline' md={12}>
+                                                <p style={{color:'white'}}>{ message.messageContent }</p>
+                                                </Grid>)        
+                                    })
+                                }
+                                <Grid container direction='row' alignItems='baseline'>
+                                <form onSubmit={this.handleMessageSubmit}>
+                                    <TextField 
+                                        id='chatbox' 
+                                        name='chatbox' 
+                                        multiline 
+                                        value={this.state.chatMesageContent} 
+                                        onChange={ (e) => {this.setState({ chatMesageContent: e.target.value })}}
+                                    />
+                                    <Input type='submit' value='Send Message'/>
+                                </form>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    
                 }
-                <br></br>
-                <button id='btn1' onClick={ this.onStreamClick }>Stream your screen</button>
-                <button id='btn3' onClick={ this.onStopClick}>Stop stream</button>
-                <br></br>
-            </div>
+            </Grid>
         );
     }
 }
 
+
+                            
+                                
+                            
