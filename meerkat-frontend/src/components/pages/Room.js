@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { VideoPlayer } from '../';
 import { Stomp } from '@stomp/stompjs';
+import WebRTCAdaptor from './webrtc_adaptor';
 
 export default class Room extends Component {
     constructor(props){
@@ -17,7 +18,9 @@ export default class Room extends Component {
                 }],
                 poster: "//vjs.zencdn.net/v/oceans.png"
             },
-            stompClient: null
+            stompClient: null,
+            roomId: null,
+            isHost: false
         }
         this.onStreamClick = this.onStreamClick.bind(this);
         this.onStopClick = this.onStopClick.bind(this);
@@ -29,10 +32,28 @@ export default class Room extends Component {
 
     handleSocketConnect(frame) {
         console.log('Connected: ', frame);
-        this.state.stompClient.subscribe('/topic/rooms/stream1', this.handleSocketMessages);
+        this.state.stompClient.subscribe(`/topic/rooms/${this.state.roomId}`, this.handleSocketMessages);
     }
 
     componentDidMount(){
+        //retrieving the data for this room
+        const { roomId } = this.props.match.params;
+        fetch(`http://localhost:8080/api/room/getByRoomId?id=${roomId}`)
+            .then( (res) => res.json() )
+            .then( (roomData) => {
+                console.log(roomData);
+                const { hostId } = roomData;
+                const roomId = roomData.id;
+                const userId = JSON.parse(localStorage.getItem('userData').id);
+                const isHost = userId == hostId;
+
+                this.setState({ roomId, isHost });
+            })
+            .catch( (err) => { 
+                console.log(err)
+                //show error page
+            });
+
         //setting up the socket for stream info signalling
         var socket = new window.SockJS('http://localhost:8080/meerkat-websocket');
         socket.withCredentials = true;
@@ -41,8 +62,9 @@ export default class Room extends Component {
         stompClient.connect({}, this.handleSocketConnect);
         
         //setting up adaptor for screen recording and publishing
+        console.log(window.WebRTCAdaptor)
         var publishAdaptor = new window.WebRTCAdaptor({
-            websocket_url: 'ws://localhost:5080/WebRTCApp/websocket',
+            websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
             mediaConstraints: {
                 video: 'screen+camera',
                 audio: true
@@ -65,8 +87,9 @@ export default class Room extends Component {
                 alert(errorMessage);
             }
         });
-        // console.log(publishAdaptor)
+        //save the adaptor
         this.setState({ publishAdaptor });
+
     }
 
     handleSocketMessages(content){
@@ -76,16 +99,15 @@ export default class Room extends Component {
         } else if(message.messageType == 'stop stream') {
             this.setClientVidSrc(null);
         }
-        // console.log(message);
     }
 
     handleAdaptorInfo(info, obj){
         if (info == 'initialized') {
             console.log('initialized');
         } else if (info == 'publish_started') {
-            this.state.stompClient.send('/streams/start/stream1', {}, JSON.stringify({'streamId': 'stream1'}));
+            this.state.stompClient.send(`/streams/start/${this.state.roomId}`, {}, JSON.stringify({'streamId': this.state.roomId}));
         } else if (info == 'publish_finished') {
-            this.state.stompClient.send('/streams/stop/stream1', {}, JSON.stringify({'streamId': 'stream1'}));
+            this.state.stompClient.send(`/streams/stop/${this.state.roomId}`, {}, JSON.stringify({'streamId': this.state.roomId}));
         } 
     }
 
@@ -123,12 +145,17 @@ export default class Room extends Component {
         return (
             <div>
                 <h1>Party Room</h1>
-                <video 
-                        id='stream' 
-                        controls
-                        width="620" >
-                </video>
-                <VideoPlayer { ...this.state.videoJsOptions } />
+                {
+                    this.state.isHost ?
+
+                    <video 
+                            id='stream' 
+                            controls
+                            width="620" >
+                    </video>
+                        :
+                    <VideoPlayer { ...this.state.videoJsOptions } />
+                }
                 <br></br>
                 <button id='btn1' onClick={ this.onStreamClick }>Stream your screen</button>
                 <button id='btn3' onClick={ this.onStopClick}>Stop stream</button>

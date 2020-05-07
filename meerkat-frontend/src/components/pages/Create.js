@@ -23,7 +23,6 @@ export default function Create() {
             .then( (res) => res.json() )
             .then( (genres) => {
                 let genreInfo = { }
-                //sets clickable state for each genre's chip (can't click if already selected)
                 genres.map( (genre) => {
                     genreInfo[genre.genreName] = genre.genreId;
                 });
@@ -40,7 +39,6 @@ export default function Create() {
         const hostId = JSON.parse(localStorage.getItem('userData')).id;
         data.hostId = hostId;
         data.roomGenre = JSON.parse(data.roomGenre);
-        console.log(data);
 
         const jwt = localStorage.getItem('jwt');
         fetch('/api/room/create', {
@@ -60,7 +58,7 @@ export default function Create() {
             console.log(data);
             let userData = JSON.parse(localStorage.getItem('userData'));
             userData.roomIds = [...userData.roomIds, data.roomId];
-            localStorage.set('userData', JSON.stringify(userData));
+            localStorage.setItem('userData', JSON.stringify(userData));
         })
         .catch((error) => {
             console.error('Error', error);
