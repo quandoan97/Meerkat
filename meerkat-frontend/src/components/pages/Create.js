@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { TextField, Button, Input, Chip, Select, MenuItem, InputLabel } from '@material-ui/core/';
-import ChipInput from 'material-ui-chip-input';
-
 
 export default function Create() {
 
@@ -59,6 +57,7 @@ export default function Create() {
             let userData = JSON.parse(localStorage.getItem('userData'));
             userData.roomIds = [...userData.roomIds, data.roomId];
             localStorage.setItem('userData', JSON.stringify(userData));
+
         })
         .catch((error) => {
             console.error('Error', error);

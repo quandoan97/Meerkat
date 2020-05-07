@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { VideoPlayer } from '../';
 import { Stomp } from '@stomp/stompjs';
-import WebRTCAdaptor from './webrtc_adaptor';
+import queryString from 'query-string';
 
 export default class Room extends Component {
     constructor(props){
@@ -19,7 +19,7 @@ export default class Room extends Component {
                 poster: "//vjs.zencdn.net/v/oceans.png"
             },
             stompClient: null,
-            roomId: null,
+            roomData: null,
             isHost: false
         }
         this.onStreamClick = this.onStreamClick.bind(this);
@@ -32,28 +32,24 @@ export default class Room extends Component {
 
     handleSocketConnect(frame) {
         console.log('Connected: ', frame);
-        this.state.stompClient.subscribe(`/topic/rooms/${this.state.roomId}`, this.handleSocketMessages);
+        this.state.stompClient.subscribe(`/topic/rooms/${this.state.roomData.id}`, this.handleSocketMessages);
     }
 
-    componentDidMount(){
-        //retrieving the data for this room
-        const { roomId } = this.props.match.params;
-        fetch(`http://localhost:8080/api/room/getByRoomId?id=${roomId}`)
+    async componentDidMount(){
+        const roomId = queryString.parse(window.location.search).id;
+        await fetch(`http://localhost:8080/api/rooms/getByRoomId?id=${roomId}`)
             .then( (res) => res.json() )
             .then( (roomData) => {
-                console.log(roomData);
-                const { hostId } = roomData;
-                const roomId = roomData.id;
-                const userId = JSON.parse(localStorage.getItem('userData').id);
+                const userId = JSON.parse(localStorage.getItem('userData')).id;
+                const hostId = roomData.hostId;
                 const isHost = userId == hostId;
-
-                this.setState({ roomId, isHost });
-            })
-            .catch( (err) => { 
+                this.setState({ roomData, isHost });
+           })
+          .catch( (err) => { 
                 console.log(err)
                 //show error page
-            });
-
+           });
+      
         //setting up the socket for stream info signalling
         var socket = new window.SockJS('http://localhost:8080/meerkat-websocket');
         socket.withCredentials = true;
@@ -105,9 +101,9 @@ export default class Room extends Component {
         if (info == 'initialized') {
             console.log('initialized');
         } else if (info == 'publish_started') {
-            this.state.stompClient.send(`/streams/start/${this.state.roomId}`, {}, JSON.stringify({'streamId': this.state.roomId}));
+            this.state.stompClient.send(`/streams/start/${this.state.roomData.id}`, {}, JSON.stringify({'streamId': this.state.roomData.id}));
         } else if (info == 'publish_finished') {
-            this.state.stompClient.send(`/streams/stop/${this.state.roomId}`, {}, JSON.stringify({'streamId': this.state.roomId}));
+            this.state.stompClient.send(`/streams/stop/${this.state.roomData.id}`, {}, JSON.stringify({'streamId': this.state.roomData.id}));
         } 
     }
 
@@ -115,7 +111,7 @@ export default class Room extends Component {
         var videoJsOptions = this.state.videoJsOptions;
         if(streamId != null) {
             videoJsOptions.sources = [{
-                src: `http://localhost:5080/WebRTCApp/streams/${streamId}.m3u8`,
+                src: `http://146.148.93.227:5080/WebRTCApp/streams/${streamId}.m3u8`,
                 type: 'application/x-mpegURL'
             }];
         } else {
@@ -129,7 +125,7 @@ export default class Room extends Component {
 
     onStreamClick(event) {
         try {
-            this.state.publishAdaptor.publish('stream1');
+            this.state.publishAdaptor.publish(this.state.roomData.id);
             // this.state.stompClient.send('/streams/start/stream1', {}, JSON.stringify({'streamId': 'stream1'}));
         } catch(err) {
             console.log(err);
@@ -137,7 +133,7 @@ export default class Room extends Component {
     }
 
     onStopClick(event){
-        this.state.publishAdaptor.stop('stream1');
+        this.state.publishAdaptor.stop(this.state.roomData.id);
         // this.state.stompClient.send('/streams/stop/stream1', {}, JSON.stringify({'streamId': 'stream1'}));
     }
 

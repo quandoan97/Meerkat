@@ -24,8 +24,6 @@ export default function Register(){
             .then( (res) => res.json() )
             .then( (genres) => {
                 let genreChipProps = { }
-
-                //sets clickable state for each genre's chip (can't click if already selected)
                 genres.map( (genre) => {
                     genreChipProps[genre.genreId] = {...genre, isSelected: false}
                 });
