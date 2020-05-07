@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { TextField, Button, Input, Chip } from '@material-ui/core/';
+import { TextField, Button, Input, Chip, Select, MenuItem, InputLabel } from '@material-ui/core/';
 import ChipInput from 'material-ui-chip-input';
 
 
@@ -9,31 +9,69 @@ export default function Create() {
 
     const history = useHistory();
 
+    const [allGenres, setAllGenres] = useState({});
+    const [selectedGenre, setSelectedGenre] = useState(undefined);
+
     const {register, handleSubmit, errors, control} = useForm({
         defaultValues:{
             chips: []
         }
     })
 
+    useEffect(() => {
+        fetch('https://warm-meadow-92561.herokuapp.com/api/genre/getAll')
+            .then( (res) => res.json() )
+            .then( (genres) => {
+                let genreInfo = { }
+                //sets clickable state for each genre's chip (can't click if already selected)
+                genres.map( (genre) => {
+                    genreInfo[genre.genreName] = genre.genreId;
+                });
+                setAllGenres(genreInfo);
+            })
+            .catch( (err) => { 
+                console.log(err)
+                //show error page
+            });
+    }, []);
+    
+
     const onSubmit = (data, error, props) => {
-        //The first url is used to bypass CORS error
-        fetch('https://cors-anywhere.herokuapp.com/'+'https://webhook.site/0fa7de81-e70b-4085-9716-b3e11c982f5f', {
+        const hostId = JSON.parse(localStorage.getItem('userData')).id;
+        data.hostId = hostId;
+        data.roomGenre = JSON.parse(data.roomGenre);
+        console.log(data);
+
+        const jwt = localStorage.getItem('jwt');
+        fetch('/api/room/create', {
             method: 'POST',
             headers:{
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization' : `Bearer ${jwt}`
             },
             body: JSON.stringify(data)
         }).then(function(response) {
             if(response.ok){
-                // alert("Thank you for registering")
-                // history.push('/');
+                return response.json();
             }
+        })
+        .then( data => {
+            console.log(data);
+            let userData = JSON.parse(localStorage.getItem('userData'));
+            userData.roomIds = [...userData.roomIds, data.roomId];
+            localStorage.set('userData', JSON.stringify(userData));
         })
         .catch((error) => {
             console.error('Error', error);
         })
+        
     };
+    const handleSelect = (event) => {
+        const genreName = event.target.value;
+        const genreId = allGenres[genreName];
+        setSelectedGenre({ genreId, genreName });
+    }
 
 
     return (
@@ -60,28 +98,30 @@ export default function Create() {
                         </div>
 
                         <div className="col">
-                            <Controller 
-                                as={
-                                    <ChipInput
-                                        fullWidthInput
-                                        allowDuplicates="false"
-                                        alwaysShowPlaceholder
-                                        placeholder="Enter in genres"
-                                        inputRef={register({
-                                            required: "Please enter in the genre of your room"
-                                        })}
-                                        color="blue"
-                                    />
-                                } 
-                                name="genres" 
-                                control={control}
+                            <InputLabel id="genreLabel">Genre</InputLabel>
+                            <Select
+                                labelId="genreLabel" 
+                                id="genreSelect"
+                                value={ selectedGenre ? selectedGenre.genreName : "" }
+                                onChange={ handleSelect }
+                            >
+                                {
+                                    Object.keys(allGenres).map( (genreName) => <MenuItem key={genreName} value={genreName}> {genreName} </MenuItem>)
+                                }
+                            </Select>
+                            <Input 
+                                type="hidden" 
+                                name="roomGenre"
+                                value={ JSON.stringify(selectedGenre) }
+                                inputRef = { register( { required: "Please enter the room genre." }) }
+
                             />
-                            { errors.genres && <p className="p-error"> { errors.genres.message }</p>}
+                            { errors.roomGenre && <p className="p-error"> { errors.roomGenre.message }</p>}
                         </div>
                             
                     </div>
                     <div className="div-button">
-                        <Button variant="outlined" color="blue" onClick={ handleSubmit(onSubmit) }> Submit </Button>
+                        <Button variant="outlined" color="primary" onClick={ handleSubmit(onSubmit) }> Submit </Button>
                     </div>                
                 </div>
             </form>
