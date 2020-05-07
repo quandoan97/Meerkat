@@ -44,11 +44,12 @@ export default class Room extends Component {
                 const hostId = roomData.hostId;
                 const isHost = userId == hostId;
                 this.setState({ roomData, isHost });
-            })
-            .catch( (err) => { 
+           })
+          .catch( (err) => { 
                 console.log(err)
                 //show error page
-            });
+           });
+      
         //setting up the socket for stream info signalling
         var socket = new window.SockJS('http://localhost:8080/meerkat-websocket');
         socket.withCredentials = true;
@@ -57,6 +58,7 @@ export default class Room extends Component {
         stompClient.connect({}, this.handleSocketConnect);
         
         //setting up adaptor for screen recording and publishing
+        console.log(window.WebRTCAdaptor)
         var publishAdaptor = new window.WebRTCAdaptor({
             websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
             mediaConstraints: {
@@ -81,8 +83,9 @@ export default class Room extends Component {
                 alert(errorMessage);
             }
         });
-        // console.log(publishAdaptor)
+        //save the adaptor
         this.setState({ publishAdaptor });
+
     }
 
     handleSocketMessages(content){
@@ -92,7 +95,6 @@ export default class Room extends Component {
         } else if(message.messageType == 'stop stream') {
             this.setClientVidSrc(null);
         }
-        // console.log(message);
     }
 
     handleAdaptorInfo(info, obj){
@@ -140,13 +142,14 @@ export default class Room extends Component {
             <div>
                 <h1>Party Room</h1>
                 {
-                this.state.isHost ?
+                    this.state.isHost ?
+
                     <video 
                             id='stream' 
                             controls
                             width="620" >
                     </video>
-                    :
+                        :
                     <VideoPlayer { ...this.state.videoJsOptions } />
                 }
                 <br></br>
