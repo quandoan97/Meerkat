@@ -1,46 +1,226 @@
-import React from 'react';
-import { TextField, Button,Input } from '@material-ui/core/'
-import { useForm } from 'react-hook-form';
+import React, { useState, useEffect } from 'react';
+import { TextField, Button, Input, Chip } from '@material-ui/core/';
+import { useForm, Controller } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
+// import ChipInput from 'material-ui-chip-input';
 
 
 export default function Register(){
-    const {register, handleSubmit, errors} = useForm();
-        
-    const onSubmit = (data) => {
-        console.log(data);
-    };
+    //variable used to redirect users after registration 
+    const history = useHistory();
 
+    const [allGenres, setAllGenres] = useState({});
+    const [selectedGenres, setSelectedGenres] = useState(new Set());
+
+    const {register, handleSubmit, errors, control} = useForm({
+        defaultValues: {
+
+        }
+    });
+
+    //retrives all genres from server to render as chips
+    useEffect(() => {
+        fetch('https://warm-meadow-92561.herokuapp.com/api/genre/getAll')
+            .then( (res) => res.json() )
+            .then( (genres) => {
+                let genreChipProps = { }
+
+                //sets clickable state for each genre's chip (can't click if already selected)
+                genres.map( (genre) => {
+                    genreChipProps[genre.genreId] = {...genre, isSelected: false}
+                });
+                setAllGenres(genreChipProps);
+            })
+            .catch( (err) => { 
+                console.log(err)
+                //show error page
+            });
+    }, []);
+    
+    const onSubmit = (data) => {
+        data.favoriteGenres = JSON.parse(`[${data.favoriteGenres}]`);
+        fetch('/auth/register', {
+            method: 'POST',
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            if(response.ok){
+                return response.json();
+            }
+        })
+        .then( data => {
+            localStorage.setItem('jwt', data.jwt);
+            localStorage.setItem('userData', JSON.stringify(data.userData));
+            history.push('/');
+        })
+        .catch((error) => {
+            alert('There was an error trying to register you.');
+            console.error('Error', error);
+        })
+    };
+    
+    const handleChipClick = (event) => {
+        //redirects context to the correct node (button) when clicking on the label
+        while(event.target.getAttribute('genreid') == undefined)
+            event.target = event.target.parentNode;
+
+        //genre of the corresponding chip will be saved in state when clicked
+        const genreId = event.target.getAttribute('genreid');
+        const genreName = event.target.getAttribute('genreName');
+        const genre = JSON.stringify({ genreId, genreName });
+        setSelectedGenres(new Set([...selectedGenres, genre]));
+
+        //the chip will be rendered unclickable unless deleted
+        let newGenreProps = JSON.parse(JSON.stringify(allGenres));
+        newGenreProps[genreId].isSelected = true;
+        setAllGenres(newGenreProps);
+    }
+
+    const handleChipDelete = (event) => {
+        while(event.target.getAttribute('genreid') == undefined)
+            event.target = event.target.parentNode;
+
+        //remove the genre from the selected set in state
+        const genreIdToDelete = event.target.getAttribute('genreid');
+        const genreNameToDelete = event.target.getAttribute('genrename');
+
+        const genreToDelete = JSON.stringify({ genreId: genreIdToDelete, genreName: genreNameToDelete });
+
+        let newSelectedGenres = new Set(selectedGenres);
+        newSelectedGenres.delete(genreToDelete);
+        setSelectedGenres(newSelectedGenres);
+
+        //render the chip to be clickable again
+        let newGenreProps = JSON.parse(JSON.stringify(allGenres));
+        newGenreProps[genreIdToDelete].isSelected = false;
+        setAllGenres(newGenreProps);
+
+    }
+    
         return (
             <div>
                 <h1> Register Page </h1>
 
-                <form onSubmit={ handleSubmit(onSubmit) }>
+                <form onSubmit={ handleSubmit(handleSubmit(data => console.log(data))) }>
                     <div className="container">
                         <div className="row"> 
+
                             <div className="col"> 
-                                <input type="text" name="fName" placeholder="First Name" ref={ register({ required: "Please enter first name", minLength: {value: 2, message: "Name must be at least 2 characters"} }) }/> 
-                                {errors.fName && <p> { errors.fName.message } </p>}
+                                <TextField 
+                                    type="text" 
+                                    name="firstName" 
+                                    placeholder="First Name" 
+                                    inputRef={ 
+                                        register({ 
+                                            required: "Please enter first name", 
+                                            minLength: {value: 2, message: "Name must be at least 2 characters"} 
+                                            }) 
+                                        }
+                                /> 
+                                {errors.fName && <p className="p-error"> { errors.fName.message } </p>}
                             </div>
+
                             <div className="col">  
-                                <input type="text" name="lName" placeholder="Last Name" ref={ register({ required: true, minLength: {value: 2, message: "Name must be at least 2 characters"} }) }/> 
-                                {errors.lName && <p> { errors.lName.message } </p>}
+                                <Input 
+                                    type="text" 
+                                    name="lastName" 
+                                    placeholder="Last Name" 
+                                    inputRef={ 
+                                        register({ 
+                                            required: "Please enter last name", 
+                                            minLength: {value: 2, message: "Name must be at least 2 characters"} }) 
+                                        }
+                                    /> 
+                                {errors.lName && <p className="p-error"> { errors.lName.message } </p> }
                             </div>
+
                             <div className="col">  
-                                <input type="text" name="uName" placeholder="Username" ref={ register }/> 
+                                <Input 
+                                    type="text" 
+                                    name="username" 
+                                    placeholder="Username" 
+                                    inputRef={ 
+                                        register({ 
+                                            required: "Please enter Username", 
+                                            minLength: {value: 2, message: "Name must be at least 2 characters"} }) 
+                                    }
+                                /> 
+                                {errors.lName && <p className="p-error"> { errors.lName.message } </p>}
                             </div>
+
                             <div className="col">  
-                                <input type="password" name="password" placeholder="Password" ref={ register({ required: "Please Enter password", minLength: {value: 8, message:"Password too short" }}) }/> 
-                                {errors.password && <p> {errors.password.message} </p>}
+                                <Input 
+                                    type="password" 
+                                    name="password" 
+                                    placeholder="Password" 
+                                    inputRef={ 
+                                        register({ 
+                                            required: "Please Enter password", 
+                                            minLength: {value: 8, message:"Password too short" }}) 
+                                    }
+                                /> 
+                                {errors.password && <p className="p-error"> { errors.password.message } </p>}
                             </div>
-                            <div className="row">
-                                <div className="col">
-                                    <input type="email" name="emailAddress" placeholder="Email Address"/>
-                                </div>
+
+                            <div className="col">
+                                <Input 
+                                    type="email" 
+                                    name="email" 
+                                    placeholder="Email Address" 
+                                    inputRef={ 
+                                        register({
+                                            required: 'Required',
+                                            pattern: {value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, 
+                                            message: "invalid email address"}}) 
+                                    }
+                                />
+                                {errors.emailAddress && <p className="p-error"> { errors.emailAddress.message } </p>}
                             </div>
+
+                            <div className="col">
+                            {/* <Controller 
+                                as={
+                                    <ChipInput
+                                        fullWidthInput
+                                        allowDuplicates="false"
+                                        alwaysShowPlaceholder
+                                        placeholder="Your favorite genres"
+                                        inputRef={register}
+                                        color="blue"
+                                    />
+                                } 
+                                name="genres" 
+                                control={control}
+                            />
+                            { errors.genres && <p className="p-error"> { errors.genres.message }</p>} */}
+                            {
+                                Object.values(allGenres).map( (genre) => <Chip 
+                                                            clickable = { !genre.isSelected }
+                                                            color='primary'
+                                                            label={ genre.genreName }
+                                                            genreName={ genre.genreName }
+                                                            genreId={ genre.genreId } 
+                                                            onClick={ genre.isSelected ? null : handleChipClick}
+                                                            onDelete={ genre.isSelected ? handleChipDelete : null } 
+                                                        /> )
+                            }
+                        </div>
+                        <div className='col'>
+                            <Input
+                                name="favoriteGenres"
+                                type="hidden"
+                                value={[...selectedGenres]}
+                                inputRef={register}
+                            />
+                        </div>
                         </div>
                     </div>
-                    <div>
-                        <Button variant="contained" onClick={ handleSubmit(onSubmit) }> Submit </Button>
+                    <div className="div-button">
+                        <Button variant="outlined" color="blue" onClick={ handleSubmit(onSubmit) }> Submit </Button>
                     </div>
                 </form>
 
