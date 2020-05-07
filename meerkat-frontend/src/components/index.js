@@ -6,11 +6,15 @@ import LogIn from './pages/LogIn';
 import UserPage from './pages/UserPage';
 import Create from './pages/Create';
 import Register from './pages/Register';
+import Room from './pages/Room';
+import VideoPlayer from './VideoPlayer';
 
 export {
     Home,
     Create,
     LogIn,
     Register,
-    UserPage
+    UserPage,
+    Room,
+    VideoPlayer
 }

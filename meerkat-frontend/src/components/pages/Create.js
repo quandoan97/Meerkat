@@ -1,38 +1,127 @@
-import React from 'react';
-import { TextField, Button,Input } from '@material-ui/core/'
-import { useForm } from 'react-hook-form';
-
+import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
+import { TextField, Button, Input, Chip, Select, MenuItem, InputLabel } from '@material-ui/core/';
 
 export default function Create() {
-      const {register, handleSubmit, errors} = useForm();
 
-      const onSubmit = (data) => {
-          console.log(data);
-      };
+    const history = useHistory();
 
-        return (
-            <div>
-                <h1> Room Creation </h1>
-                <form onSubmit={ handleSubmit(onSubmit) }>
-                    <div className="container">
-                        <div className="row">
-                            <div className="col">
-                                <input type="text" name="roomName" placeholder="Name Your Room" ref={ register({ required: "Please enter room name", minLength: {value: 2, message: "must be at least 2 characters"} }) }/>
-                                {errors.roomName && <p> { errors.roomName.message } </p>}
-                            </div>
-                            <div className="col">
-                                <input type="text" name="uniquePin" placeholder="Room Pin Number" ref={ register({ required: true, minLength: {value: 2, message: "Must be at least 2 characters"} }) }/>
-                                {errors.uniquePin && <p> { errors.uniquePin.message } </p>}
-                            </div>
-                            <div className="col">
-                                <input type="text" name="genre" placeholder="Genre" ref={ register }/>
-                            </div>
+    const [allGenres, setAllGenres] = useState({});
+    const [selectedGenre, setSelectedGenre] = useState(undefined);
+
+    const {register, handleSubmit, errors, control} = useForm({
+        defaultValues:{
+            chips: []
+        }
+    })
+
+    useEffect(() => {
+        fetch('https://warm-meadow-92561.herokuapp.com/api/genre/getAll')
+            .then( (res) => res.json() )
+            .then( (genres) => {
+                let genreInfo = { }
+                genres.map( (genre) => {
+                    genreInfo[genre.genreName] = genre.genreId;
+                });
+                setAllGenres(genreInfo);
+            })
+            .catch( (err) => { 
+                console.log(err)
+                //show error page
+            });
+    }, []);
+    
+
+    const onSubmit = (data, error, props) => {
+        const hostId = JSON.parse(localStorage.getItem('userData')).id;
+        data.hostId = hostId;
+        data.roomGenre = JSON.parse(data.roomGenre);
+
+        const jwt = localStorage.getItem('jwt');
+        fetch('/api/room/create', {
+            method: 'POST',
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization' : `Bearer ${jwt}`
+            },
+            body: JSON.stringify(data)
+        }).then(function(response) {
+            if(response.ok){
+                return response.json();
+            }
+        })
+        .then( data => {
+            console.log(data);
+            let userData = JSON.parse(localStorage.getItem('userData'));
+            userData.roomIds = [...userData.roomIds, data.roomId];
+            localStorage.setItem('userData', JSON.stringify(userData));
+
+        })
+        .catch((error) => {
+            console.error('Error', error);
+        })
+        
+    };
+    const handleSelect = (event) => {
+        const genreName = event.target.value;
+        const genreId = allGenres[genreName];
+        setSelectedGenre({ genreId, genreName });
+    }
+
+
+    return (
+        <div>
+            <h1> Room Creation </h1>
+
+            <form onSubmit={ handleSubmit(handleSubmit(data => console.log(data))) }>
+                <div className="container">
+                    <div className="row">
+                        
+                        <div className="col">
+                            <Input
+                                type="text"
+                                name="roomName"
+                                placeholder="My Room Name"
+                                inputRef={
+                                    register({
+                                        required: "Please enter your room name",
+                                        minLength: {value: 1, message: "Room name must be at least 1 character long"}
+                                    })
+                                }
+                            />
+                            { errors.roomName && <p className="p-error"> { errors.roomName.message } </p>}
                         </div>
+
+                        <div className="col">
+                            <InputLabel id="genreLabel">Genre</InputLabel>
+                            <Select
+                                labelId="genreLabel" 
+                                id="genreSelect"
+                                value={ selectedGenre ? selectedGenre.genreName : "" }
+                                onChange={ handleSelect }
+                            >
+                                {
+                                    Object.keys(allGenres).map( (genreName) => <MenuItem key={genreName} value={genreName}> {genreName} </MenuItem>)
+                                }
+                            </Select>
+                            <Input 
+                                type="hidden" 
+                                name="roomGenre"
+                                value={ JSON.stringify(selectedGenre) }
+                                inputRef = { register( { required: "Please enter the room genre." }) }
+
+                            />
+                            { errors.roomGenre && <p className="p-error"> { errors.roomGenre.message }</p>}
+                        </div>
+                            
                     </div>
-                    <div>
+                    <div className="div-button">
                         <Button variant="contained" onClick={ handleSubmit(onSubmit) }> Submit </Button>
-                    </div>
-                </form>
-            </div>
-        )
+                    </div>                
+                </div>
+            </form>
+        </div>
+    )
 }

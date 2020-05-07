@@ -98,3 +98,12 @@ li {
   top: 260px;
   background-color: rgb(58, 57, 57) /* Light Black */
 }
+
+.p-error{
+  color: red;
+  font-size: 9px;
+}
+
+.div-button{
+  margin-top: 10px;
+}
