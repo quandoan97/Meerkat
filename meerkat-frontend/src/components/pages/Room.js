@@ -33,11 +33,12 @@ export default class Room extends Component {
     handleSocketConnect(frame) {
         console.log('Connected: ', frame);
         this.state.stompClient.subscribe(`/topic/rooms/${this.state.roomData.id}`, this.handleSocketMessages);
+        this.state.stompClient.send(`/streams/join/${this.state.roomData.id}`, {}, JSON.stringify({'streamId': this.state.roomData.id}));
     }
 
     async componentDidMount(){
         const roomId = queryString.parse(window.location.search).id;
-        await fetch(`http://localhost:8080/api/rooms/getByRoomId?id=${roomId}`)
+        await fetch(`https://warm-meadow-92561.herokuapp.com:8080/api/rooms/getByRoomId?id=${roomId}`)
             .then( (res) => res.json() )
             .then( (roomData) => {
                 const userId = JSON.parse(localStorage.getItem('userData')).id;
@@ -50,39 +51,40 @@ export default class Room extends Component {
                 //show error page
             });
         //setting up the socket for stream info signalling
-        var socket = new window.SockJS('http://localhost:8080/meerkat-websocket');
+        var socket = new window.SockJS('https://warm-meadow-92561.herokuapp.com:8080/meerkat-websocket');
         socket.withCredentials = true;
         const stompClient = Stomp.over(socket);
         this.setState({ stompClient })
         stompClient.connect({}, this.handleSocketConnect);
         
         //setting up adaptor for screen recording and publishing
-        var publishAdaptor = new window.WebRTCAdaptor({
-            websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
-            mediaConstraints: {
-                video: 'screen+camera',
-                audio: true
-            },
-            peerconnection_config: null,
-            sdp_constraints: {
-                OfferToReceiveAudio: false,
-                OfferToReceiveVideo: false
-            },
-            localVideoId: 'stream',
-            debug: true,
-            callback: this.handleAdaptorInfo,
-            callbackError: function(error, message) {
-                var errorMessage = JSON.stringify(error);
-                if (typeof message != 'undefined') {
-                    errorMessage = message;
+        if(this.state.isHost) {
+            var publishAdaptor = new window.WebRTCAdaptor({
+                websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
+                mediaConstraints: {
+                    video: 'screen+camera',
+                    audio: true
+                },
+                peerconnection_config: null,
+                sdp_constraints: {
+                    OfferToReceiveAudio: false,
+                    OfferToReceiveVideo: false
+                },
+                localVideoId: 'stream',
+                debug: true,
+                callback: this.handleAdaptorInfo,
+                callbackError: function(error, message) {
+                    var errorMessage = JSON.stringify(error);
+                    if (typeof message != 'undefined') {
+                        errorMessage = message;
+                    }
+                    console.log('error callback: ' + JSON.stringify(error));
+                    console.log(errorMessage);
+                    alert(errorMessage);
                 }
-                console.log('error callback: ' + JSON.stringify(error));
-                console.log(errorMessage);
-                alert(errorMessage);
-            }
-        });
-        // console.log(publishAdaptor)
-        this.setState({ publishAdaptor });
+            });
+            this.setState({ publishAdaptor });
+        }
     }
 
     handleSocketMessages(content){
@@ -92,7 +94,6 @@ export default class Room extends Component {
         } else if(message.messageType == 'stop stream') {
             this.setClientVidSrc(null);
         }
-        // console.log(message);
     }
 
     handleAdaptorInfo(info, obj){
@@ -124,7 +125,6 @@ export default class Room extends Component {
     onStreamClick(event) {
         try {
             this.state.publishAdaptor.publish(this.state.roomData.id);
-            // this.state.stompClient.send('/streams/start/stream1', {}, JSON.stringify({'streamId': 'stream1'}));
         } catch(err) {
             console.log(err);
         }
@@ -132,7 +132,6 @@ export default class Room extends Component {
 
     onStopClick(event){
         this.state.publishAdaptor.stop(this.state.roomData.id);
-        // this.state.stompClient.send('/streams/stop/stream1', {}, JSON.stringify({'streamId': 'stream1'}));
     }
 
     render(){
