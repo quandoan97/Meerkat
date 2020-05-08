@@ -11,7 +11,6 @@ export default class Room extends Component {
         this.state = {
             publishAdaptor: null,
             videoJsOptions: {
-                autoplay: true,
                 controls: true,
                 sources: [{
                     src: '',
@@ -54,12 +53,12 @@ export default class Room extends Component {
         await fetch(`https://warm-meadow-92561.herokuapp.com/api/room/getByRoomId?id=${roomId}`)
             .then( (res) => res.json() )
             .then( (roomData) => {
-                console.log(roomData);
                 const userId = JSON.parse(localStorage.getItem('userData')).id;
                 const hostId = roomData.hostId;
                 const isHost = userId == hostId;
+                
                 this.setState({ roomData, isHost });
-                console.log(this.state);
+
            })
           .catch( (err) => { 
                 console.log(err)
@@ -70,17 +69,22 @@ export default class Room extends Component {
         var socket = new window.SockJS('https://warm-meadow-92561.herokuapp.com/meerkat-websocket');
         socket.withCredentials = true;
         const stompClient = Stomp.over(socket);
-        this.setState({ stompClient })
-        stompClient.connect({}, this.handleSocketConnect);
-        
-        //setting up adaptor for screen recording and publishing
-    }
 
-    handleSocketMessages(content){
+        this.setState({ stompClient: stompClient });
+        if(!this.state.stompClient){
+            console.log('stompe mpty')
+            window.location.reload();
+        }
+        stompClient.connect({}, this.handleSocketConnect);
+    }
+    async handleSocketMessages(content){
         const message = JSON.parse(content.body);
         if(message.messageType == 'start stream') {
+            await new Promise(r => setTimeout(r, 20000));
+            console.log('STREAM STARTED')
             this.setClientVidSrc(message.streamId);
         } else if(message.messageType == 'stop stream') {
+            console.log('STREAM STOPPED')
             this.setClientVidSrc(null);
         } else if(message.messageType == 'chat message' || message.messageType == 'join message inactive') {
             this.addChatMessage(message);
@@ -138,7 +142,7 @@ export default class Room extends Component {
     }
 
     async onStreamClick(event) {
-        var publishAdaptor = new window.WebRTCAdaptor({
+        let publishAdaptor = new window.WebRTCAdaptor({
             websocket_url: 'ws://146.148.93.227:5080/WebRTCApp/websocket',
             mediaConstraints: {
                 video: 'screen+camera',
@@ -163,8 +167,13 @@ export default class Room extends Component {
             }
         });
         this.setState({ publishAdaptor });
+
+        const vid = document.getElementById('stream');
+        vid.play();
+
         try {
-            this.state.publishAdaptor.publish(this.state.roomData.id);
+            await new Promise(r => setTimeout(r, 10000));
+            publishAdaptor.publish(this.state.roomData.id);
         } catch(err) {
             console.log(err);
         }

@@ -5,6 +5,7 @@ import 'video.js/dist/video-js.css';
 export default class VideoPlayer extends React.Component {
   componentDidMount() {
     // instantiate Video.js
+    console.log(this.videoNode)
     this.player = videojs(this.videoNode, this.props, function onPlayerReady() {
       console.log('onPlayerReady', this)
     });
@@ -18,7 +19,8 @@ export default class VideoPlayer extends React.Component {
   }
 
   async componentWillReceiveProps(nextProps) {
-    await new Promise(r => setTimeout(r, 10000));
+    // await new Promise(r => setTimeout(r, 10000));
+    this.videoNode.play();
     console.log(nextProps)
     this.player.src(nextProps.sources);
   }

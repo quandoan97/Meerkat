@@ -17,7 +17,7 @@
   color: #09d3ac;
 }
 
-li {
+.nav li {
   width: 40%;
   display: flex;
   justify-content: space-around;
@@ -61,8 +61,12 @@ li {
 
 .nav{
   background-color: #00000000;
-
 }
+
+.login{
+  margin-right: 30px;
+}
+
 #mySidenav a {
   position: absolute; /* Position them relative to the browser window */
   left: -80px; /* Position them outside of the screen */
@@ -122,4 +126,12 @@ li {
 
 .MuiInputBase-root{
   background-color: rgb(187, 182, 211);
+}
+
+.MuiCardContent-root{
+  padding: 50px !important;
+}
+
+.MuiCard-root{
+  margin-left:15% !important;
 }

@@ -278,11 +278,6 @@ function WebRTCAdaptor(initialValues)
 			.then(function(stream){
 
 				// thiz.getUserMediaDetail(mediaConstraints,audioConstraint,stream);
-				var audioTrack = stream.getAudioTracks();
-				// if (audioTrack.length > 0) {
-				// 	stream.removeTrack(audioTrack[0]);
-				// }
-
 				// //add callback if desktop is sharing
 				stream.getVideoTracks()[0].onended = function(event) {
 					thiz.callback("screen_share_stopped");
@@ -297,14 +292,15 @@ function WebRTCAdaptor(initialValues)
 				//var screenVideo = document.getElementById('sourceVideo');
 				var screenVideo = document.createElement('video');
 				//TODO: check audio track
-				console.log(stream.getAudioTracks());
-				console.log(stream.getVideoTracks());
 				screenVideo.srcObject = stream;
 				screenVideo.play();
 
 				var canvasStream = canvas.captureStream(15);
-				// canvasStream.addTrack(stream.getAudioTracks()[0]);
-				
+				var audioTrack = stream.getAudioTracks();
+				if (audioTrack.length > 0) {
+					canvasStream.addTrack(stream.getAudioTracks()[0]);
+					stream.removeTrack(audioTrack[0]);
+				}
 				//call gotStream
 				thiz.gotStream(canvasStream);
 

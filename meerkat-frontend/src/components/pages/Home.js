@@ -23,12 +23,11 @@ export default class Home extends Component {
                       <Link to="/"><img src="https://images.squarespace-cdn.com/content/v1/5344b511e4b0f9ffdd2f4841/1521017739604-ZLMWFJK956X1HJF6OPOL/ke17ZwdGBToddI8pDm48kFgn1pslFD_UBE0eFFMtvglZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHxphHZ44Pm_4vAF5TeJm73sFgJc9vxs1qDpNyVTVrPpTqWIIaSPh2v08GbKqpiV54/The+GreatZoo+Escape+2%3A+Meerkat+-+Run+Animation"
                        id="meerkatgif2" alt="meerkatgif2"></img></Link>
                       </div>
-                      <div class="col-sm-7">
+                      <div class="col-sm-7 col-md-5">
                       <h3>
-                      <ul>
-                      <li>Join a public stream party OR</li>
-                      <li>Invite Friends to a private stream party</li>
-                      <li>while chatting with them about how this Meerkat disappears here :)</li></ul></h3>
+                      Join a public stream party OR
+                      Invite Friends to a private stream party
+                      while chatting with them about how this Meerkat disappears here :) </h3>
                       </div>
                     </div>
                   </div>
