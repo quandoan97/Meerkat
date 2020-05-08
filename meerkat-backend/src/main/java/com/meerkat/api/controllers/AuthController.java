@@ -3,6 +3,7 @@ package com.meerkat.api.controllers;
 import com.meerkat.api.config.JwtUtil;
 import com.meerkat.api.dtos.AuthResponseDto;
 import com.meerkat.api.dtos.UserDto;
+import com.meerkat.api.models.User;
 import com.meerkat.api.repositories.UserRepository;
 import com.meerkat.api.services._UserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +51,14 @@ public class AuthController {
         } catch(BadCredentialsException e){
             throw new Exception("Incorrect username or password.");
         } catch (Exception e) {
-            throw new Exception("There was an error authenticating your credentials.");
+//            throw new Exception("There was an error authenticating your credentials.");
+            throw e;
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(userDto.getUsername());
+        final User userData = userDetailsService.getUserByUsername(userDto.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthResponseDto(jwt));
+        return ResponseEntity.ok(new AuthResponseDto(jwt, userData));
 
     }
 }

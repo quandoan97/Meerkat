@@ -11,7 +11,7 @@ export default function LogIn(){
     const history = useHistory();
 
     const onSubmit = (data) => {
-        fetch('/auth/login', {
+        fetch('https://warm-meadow-92561.herokuapp.com/auth/login', {
             method: 'POST',
             headers:{
                 'Accept': 'application/json',

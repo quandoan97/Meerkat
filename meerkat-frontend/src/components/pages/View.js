@@ -4,14 +4,17 @@ import { Link } from 'react-router-dom';
 
 export default function View() {
     const [allRooms, setAllRooms] = useState([]);
-    useEffect( async () => {
-        await fetch('https://warm-meadow-92561.herokuapp.com/api/room/getAll')
-        .then( res => res.json() )
-        .then( (data) => {
-            console.log(data);
-            setAllRooms(data.rooms);
-        })
-        .catch(err => console.log(err));
+    useEffect( () => {
+            async function fetchData(){
+                await fetch('https://warm-meadow-92561.herokuapp.com/api/room/getAll')
+                .then( res => res.json() )
+                .then( (data) => {
+                    console.log(data);
+                    setAllRooms(data.rooms);
+                })
+                .catch(err => console.log(err));
+            }
+            fetchData();
     }, [])
 
         return (

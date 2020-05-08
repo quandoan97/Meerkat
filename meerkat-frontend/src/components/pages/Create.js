@@ -39,7 +39,7 @@ export default function Create() {
         data.roomGenre = JSON.parse(data.roomGenre);
 
         const jwt = localStorage.getItem('jwt');
-        fetch('/api/room/create', {
+        fetch('https://warm-meadow-92561.herokuapp.com/api/room/create', {
             method: 'POST',
             headers:{
                 'Accept': 'application/json',
@@ -57,6 +57,7 @@ export default function Create() {
             let userData = JSON.parse(localStorage.getItem('userData'));
             userData.roomIds = [...userData.roomIds, data.roomId];
             localStorage.setItem('userData', JSON.stringify(userData));
+            history.push('/');
 
         })
         .catch((error) => {

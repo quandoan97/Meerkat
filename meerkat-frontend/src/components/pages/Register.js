@@ -36,7 +36,7 @@ export default function Register(){
     
     const onSubmit = (data) => {
         data.favoriteGenres = JSON.parse(`[${data.favoriteGenres}]`);
-        fetch('/auth/register', {
+        fetch('https://warm-meadow-92561.herokuapp.com/auth/register', {
             method: 'POST',
             headers:{
                 'Accept': 'application/json',
