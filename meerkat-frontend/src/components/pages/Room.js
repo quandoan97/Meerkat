@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import { VideoPlayer } from '../';
-import { Grid, TextField, Input } from '@material-ui/core';
+import { Grid, TextField, Input, CircularProgress } from '@material-ui/core';
 import { Stomp } from '@stomp/stompjs';
 import queryString from 'query-string';
+import thumbnail from './vid_thumbnail.png'
 
 export default class Room extends Component {
     constructor(props){
@@ -16,7 +17,8 @@ export default class Room extends Component {
                     src: '',
                     type: 'application/x-mpegURL'
                 }],
-                poster: "//vjs.zencdn.net/v/oceans.png"
+                poster: thumbnail,
+                errorDisplay: false
             },
             stompClient: null,
             roomData: null,
@@ -32,6 +34,8 @@ export default class Room extends Component {
         this.handleSocketConnect = this.handleSocketConnect.bind(this);
         this.handleMessageSubmit = this.handleMessageSubmit.bind(this);
         this.addChatMessage = this.addChatMessage.bind(this);
+
+        this.publishAdaptor = null;
     }
 
     handleSocketConnect(frame) {
@@ -47,7 +51,7 @@ export default class Room extends Component {
             }));
     }
 
-    async componentDidMount(){ //TODO: make sure user is logged in
+    async componentDidMount(){
         const roomId = queryString.parse(window.location.search).id;
         console.log(window.location.search);
         await fetch(`https://warm-meadow-92561.herokuapp.com/api/room/getByRoomId?id=${roomId}`)
@@ -56,9 +60,8 @@ export default class Room extends Component {
                 const userId = JSON.parse(localStorage.getItem('userData')).id;
                 const hostId = roomData.hostId;
                 const isHost = userId == hostId;
-                
-                this.setState({ roomData, isHost });
 
+                this.setState({roomData, isHost});
            })
           .catch( (err) => { 
                 console.log(err)
@@ -72,7 +75,6 @@ export default class Room extends Component {
 
         this.setState({ stompClient: stompClient });
         if(!this.state.stompClient){
-            console.log('stompe mpty')
             window.location.reload();
         }
         stompClient.connect({}, this.handleSocketConnect);
@@ -166,7 +168,10 @@ export default class Room extends Component {
                 alert(errorMessage);
             }
         });
-        this.setState({ publishAdaptor });
+        
+        this.publishAdaptor = publishAdaptor;
+        console.log('publish', publishAdaptor);
+        console.log('this.', this.publishAdaptor);
 
         const vid = document.getElementById('stream');
         vid.play();
@@ -180,14 +185,20 @@ export default class Room extends Component {
     }
 
     onStopClick(event){
-        this.state.publishAdaptor.stop(this.state.roomData.id);
+        this.publishAdaptor.stop(this.state.roomData.id);
     }
 
     render(){
         return (
             <Grid container direction='row' justify='center' alignItems='center'>
+
                 <Grid item direction='row' justify='center' alignItems='center' lg={12}>
-                    <h1>Party Room</h1>
+                    {
+                        this.state.roomData ?
+                        <h1>{this.state.roomData.roomName}</h1>
+                        :
+                        <CircularProgress/>
+                    }
                 </Grid>
                 {
                     this.state.isHost ?

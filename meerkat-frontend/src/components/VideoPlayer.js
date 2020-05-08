@@ -3,11 +3,26 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 export default class VideoPlayer extends React.Component {
+  constructor(props){
+    super();
+
+    this.state = {
+      streamReady: false
+    }
+  }
   componentDidMount() {
     // instantiate Video.js
-    console.log(this.videoNode)
     this.player = videojs(this.videoNode, this.props, function onPlayerReady() {
       console.log('onPlayerReady', this)
+    });
+
+    this.player.on('error', () => {
+      var myPlayer = this,
+      reloadOptions = {};
+      reloadOptions.errorInterval = 10;
+      // myPlayer.reloadSourceOnError(reloadOptions);
+      console.log(myPlayer);
+
     });
   }
 
@@ -19,10 +34,27 @@ export default class VideoPlayer extends React.Component {
   }
 
   async componentWillReceiveProps(nextProps) {
-    // await new Promise(r => setTimeout(r, 10000));
-    this.videoNode.play();
     console.log(nextProps)
-    this.player.src(nextProps.sources);
+    while(!this.state.streamReady && nextProps.sources[0].src !== ""){
+      await fetch(nextProps.sources[0].src)
+            .then( (res) => {
+              console.log(res);
+              if(res.ok){
+                this.player.src(nextProps.sources);
+                this.setState({streamReady:true});
+                alert('The stream has started! Click on the play button to view the stream.');
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+      await new Promise(r => setTimeout(r, 10000));
+    }
+
+    if(this.state.streamReady && nextProps.sources[0].src === ""){
+      alert('The stream has ended.');
+      this.setState({ streamReady: false});
+    }
   }
 
   // wrap the player in a div with a `data-vjs-player` attribute
@@ -30,7 +62,7 @@ export default class VideoPlayer extends React.Component {
   // see https://github.com/videojs/video.js/pull/3856
   render() {
     return (
-        <div style={{width: '50%', margin: 'auto'}}>
+        <div style={{ margin: 'auto'}}>
             <div data-vjs-player>
             <video ref={ node => this.videoNode = node } className="video-js"></video>
             </div>

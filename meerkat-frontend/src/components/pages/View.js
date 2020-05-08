@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 
 export default function View() {
     const [allRooms, setAllRooms] = useState([]);
-
-    const data = ['Teresas Room', 'Two', 'Three', 'One', 'Two', 'Three']
     useEffect( async () => {
         await fetch('https://warm-meadow-92561.herokuapp.com/api/room/getAll')
         .then( res => res.json() )

@@ -6,7 +6,7 @@ export default class Home extends Component {
         console.log("I have been clicked");
     }
     render() {
-        window.setTimeout("document.getElementById('meerkatgif2').style.display='none';", 15000);
+        // window.setTimeout("document.getElementById('meerkatgif2').style.display='none';", 15000);
         return (
             <div>
                   <div id="myhomecenter" class="container-fluid text-center">
@@ -27,7 +27,7 @@ export default class Home extends Component {
                       <h3>
                       Join a public stream party OR
                       Invite Friends to a private stream party
-                      while chatting with them about how this Meerkat disappears here :) </h3>
+                      while chatting with them about this Meerkat running over here :) </h3>
                       </div>
                     </div>
                   </div>
