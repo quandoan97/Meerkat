@@ -2,10 +2,6 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-}
-
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -21,19 +17,126 @@
   color: #09d3ac;
 }
 
-nav {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  min-height: 10vh;
-  background: #282c34;
-  color: white;
-}
-
-li {
+.nav li {
   width: 40%;
   display: flex;
   justify-content: space-around;
   align-items: center;
   list-style-type: none;
+}
+
+.navbar {
+  background: #07001d !important;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.nav-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.nav-link {
+  font-size: large;
+}
+
+.nav li a{
+  color: white;
+  display: inline-block;
+}
+
+.nav>li>a:focus, .nav>li>a:hover {
+  text-decoration: none;
+  background-color: #220079;
+}
+
+.nav li {
+  width: auto;
+  border: 1px solid black;
+}
+
+.nav-pills {
+  background-color: #00000000;
+}
+
+.nav{
+  background-color: #00000000;
+}
+
+.login{
+  margin-right: 30px;
+}
+
+#mySidenav a {
+  position: absolute; /* Position them relative to the browser window */
+  left: -80px; /* Position them outside of the screen */
+  transition: 0.3s; /* Add transition on hover */
+  padding: 20px;
+  width: 100px; /* Set a specific width */
+  text-decoration: none; /* Remove underline */
+  font-size: 15px;
+  color: white;
+  border-radius: 0 5px 5px 0;
+}
+
+#mySidenav a:hover {
+  left: 0;
+}
+
+#profile {
+  top: 80px;
+  background-color:#2196F3;
+}
+
+#create {
+  top: 140px;
+  background-color:#4CAF50;
+}
+
+#view{
+  top: 200px;
+  background-color: #f44336;
+}
+
+#about {
+  top: 260px;
+  background-color: rgb(58, 57, 57) /* Light Black */
+}
+
+.p-error{
+  color: red;
+  font-size: 9px;
+}
+
+.div-button{
+  margin-top: 10px;
+}
+
+.MuiFormLabel-root{
+  color: rgb(217, 223, 230) !important;
+}
+.MuiChip-colorSecondary{
+  background-color: darkblue !important;
+  color: white;
+}
+
+.MuiChip-colorSecondary:hover{
+  background-color: lightslategray !important;
+}
+
+.MuiInputBase-root{
+  background-color: rgb(187, 182, 211);
+}
+
+.MuiCardContent-root{
+  padding: 50px !important;
+}
+
+.MuiCard-root{
+  margin-left:15% !important;
+}
+
+.video-js{
+  width: 700px;
+  height: 400px;
 }

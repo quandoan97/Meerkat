@@ -1,0 +1,87 @@
+@import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css";
+body{
+  background-color: rgb(90, 85, 110);
+}
+h1,h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: normal;
+    align:center;
+    color: white;
+    text-shadow: 1px 1px;
+}
+.btn-primary {
+    background-color: rgb(194, 188, 219);
+  border: none;
+  color:white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration:none;
+  display: inline-block;
+  font-size: 16px;
+
+  }
+  .button {
+    background-color: #07001d;
+  border: none;
+  color:white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration:none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 6px;
+
+}
+.button:hover{
+    background-color: #220079;
+}
+
+  #myhomecenter{
+    height:320px;
+    background-image: linear-gradient(rgb(90, 85, 110), #07001d);
+    padding:15px;
+    box-shadow: rgb(228, 224, 224);
+    bottom:0;
+    right:0;
+    left:0;
+  }
+  #aboutMeerkat{
+    height:350px;
+    background-color: #07001d;
+    color: white;
+    padding:15px;
+    box-shadow: rgb(228, 224, 224);
+    bottom:0;
+    right:0;
+    left:0;
+  }
+  #mycontainerLogin{
+    height:320px;
+    color: white;
+    padding:15px;
+    box-shadow: rgb(228, 224, 224);
+    bottom:0;
+    right:0;
+    left:0;
+    background-image: linear-gradient(#07001d,rgb(90, 85, 110), #07001d);
+  }
+
+  .fa {
+  padding: 10px;
+  font-size: 30px;
+  width: 10px;
+  text-align: center;
+  text-decoration: none;
+  margin: 15px 15px;
+}
+
+  footer{
+    height:200px;
+    background-color: #07001d;
+    color: white;
+    padding:15px;
+    box-shadow: rgb(228, 224, 224);
+    bottom:0;
+    right:0;
+    left:0;
+  }

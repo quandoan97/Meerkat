@@ -1,4 +1,4 @@
-package com.meerkat.api;
+package com.meerkat.api.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
